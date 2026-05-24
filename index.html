@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中華大廚：八大菜系 | 精品獨立遊戲版</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@700;900&display=swap');
+
+        :root {
+            --primary: #E53935;        
+            --primary-dark: #B71C1C;   
+            --accent: #FFCA28;         
+            --accent-dark: #FF8F00;    
+            --bg-base: #0a0a0c;
+            --panel-bg: rgba(22, 22, 26, 0.85);
+            --text-main: #F5F5F5;
+            --success: #4CAF50;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg-base); color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; overflow: hidden; user-select: none;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
+            -webkit-touch-callout: none; /* 防止長按選單 */
+        }
+
+        h1, h2, .serif-text { font-family: 'Noto Serif TC', serif; }
+        
+        /* 漂浮美食背景 */
+        .floating-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: hidden;
+        }
+        .float-food {
+            position: absolute; font-size: 35px; opacity: 0.1;
+            animation: floatUpBg 15s linear infinite; filter: grayscale(0.5);
+        }
+        @keyframes floatUpBg {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0.1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .embers {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a0a0a 0%, #030303 100%);
+            z-index: -2; transition: background 1.5s ease;
+        }
+
+        .container {
+            background: var(--panel-bg); backdrop-filter: blur(20px);
+            padding: 40px; border-radius: 20px;
+            border: 1px solid rgba(255, 202, 40, 0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(255, 202, 40, 0.03);
+            max-width: 650px; width: 90%; text-align: center; position: relative;
+        }
+
+        /* 廚師吉祥物動畫 */
+        .chef-mascot {
+            font-size: 65px; margin-bottom: -15px;
+            display: inline-block;
+            animation: breathe 2.5s ease-in-out infinite, bounceIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.6));
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.03) translateY(-6px); }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 { color: var(--accent); font-size: 38px; margin-top: 0; text-shadow: 0 4px 15px rgba(0,0,0,0.9); letter-spacing: 3px; }
+        h2 { color: var(--primary); font-size: 24px; border-bottom: 2px solid rgba(229, 57, 53, 0.3); padding-bottom: 12px; margin-bottom: 24px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        /* 升級版：立體浮雕按鈕/卡片 */
+        .btn {
+            background: linear-gradient(145deg, #2a2a2e, #1c1c1f);
+            color: #E0E0E0;
+            border: 1px solid #333;
+            padding: 16px 24px; border-radius: 12px; cursor: pointer;
+            font-size: 18px; font-weight: 900; font-family: 'Noto Sans TC', sans-serif;
+            box-shadow: 0 6px 0 #111, 0 10px 20px rgba(0,0,0,0.5);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin: 8px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--accent); color: #FFF;
+            box-shadow: 0 10px 0 #111, 0 15px 25px rgba(255, 202, 40, 0.15);
+        }
+        .btn.primary {
+            background: linear-gradient(145deg, var(--primary), var(--primary-dark));
+            color: #FFF; border-color: #FF5252;
+            box-shadow: 0 6px 0 #7F0000, 0 10px 20px rgba(229, 57, 53, 0.4);
+        }
+        .btn.primary:hover {
+            box-shadow: 0 10px 0 #7F0000, 0 15px 25px rgba(229, 57, 53, 0.6);
+        }
+        .btn:active { transform: translateY(6px) scale(0.98); box-shadow: 0 0px 0 #111, 0 4px 6px rgba(0,0,0,0.4); }
+        .btn.primary:active { box-shadow: 0 0px 0 #7F0000, 0 4px 6px rgba(0,0,0,0.6); }
+        .btn:disabled { filter: brightness(0.7) grayscale(0.5); pointer-events: none; transform: translateY(6px); box-shadow: 0 0px 0; border-color: transparent; }
+
+        .panel { display: none; opacity: 0; transform: translateY(25px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .panel.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .game-area {
+            width: 100%; height: 260px; background: #121214; border-radius: 16px;
+            position: relative; overflow: hidden; margin-top: 20px;
+            border: 2px solid #2A2A2E; box-shadow: inset 0 8px 20px rgba(0,0,0,0.9);
+        }
+
+        /* --- 升級版：知識卷軸 (Lore) --- */
+        .lore-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 12, 0.96); color: #E0E0E0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; opacity: 0; pointer-events: none; transition: 0.4s ease;
+            padding: 30px; box-sizing: border-box; text-align: left;
+            border-radius: 14px; border: 1px solid var(--accent);
+            box-shadow: inset 0 0 40px rgba(255, 202, 40, 0.1);
+            transform: scale(0.95);
+        }
+        .lore-overlay.active { opacity: 1; pointer-events: all; transform: scale(1); }
+        .lore-title { color: var(--accent); font-size: 22px; font-weight: 900; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,202,40,0.5); padding-bottom: 8px; width: 100%; letter-spacing: 1px; }
+        .lore-text { font-size: 16px; line-height: 1.8; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+        .context-bar {
+            background: linear-gradient(90deg, rgba(33, 150, 243, 0.15), rgba(33, 150, 243, 0.05)); color: #90CAF9; padding: 14px; border-radius: 10px;
+            font-size: 15px; margin-top: 18px; border-left: 4px solid #42A5F5; text-align: left; line-height: 1.6; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* --- 洗菜 --- */
+        #dirt-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="45" fill="rgba(62,39,35,0.95)" filter="blur(8px)"/></svg>');
+            background-size: cover; z-index: 10; cursor: grab; opacity: 1;
+        }
+        .wash-item { font-size: 120px; line-height: 260px; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.7)); }
+        
+        .water-splash { position: absolute; font-size: 24px; pointer-events: none; animation: splashAnim 0.6s ease-out forwards; z-index: 15; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        @keyframes splashAnim {
+            0% { transform: scale(0.5) translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) translateY(-40px) rotate(20deg); opacity: 0; }
+        }
+
+        /* --- 切菜 (水果忍者) --- */
+        #chop-area { background: #1C2329; cursor: crosshair; }
+        .flying-veg {
+            position: absolute; font-size: 55px; bottom: -80px;
+            user-select: none; will-change: transform; z-index: 5;
+            display: flex; justify-content: center; align-items: center;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.8));
+        }
+
+        #trail-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; filter: drop-shadow(0 0 10px rgba(100, 255, 218, 0.9)); }
+        
+        .float-text { position: absolute; font-weight: 900; font-size: 32px; z-index: 20; animation: floatUp 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: none; text-shadow: 0 4px 6px #000; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateY(-60px) scale(1.2); } }
+        
+        .shake-screen { animation: shake 0.35s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-4px, 0, 0); } 20%, 80% { transform: translate3d(6px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+
+        /* --- 炒菜 (節奏遊戲) --- */
+        .rhythm-track {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 100%; height: 86px; background: linear-gradient(0deg, #0a0a0c, #1a1a1f, #0a0a0c);
+            border-top: 2px solid #333; border-bottom: 2px solid #333; box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+        }
+        .target-zone {
+            position: absolute; left: 15%; top: 0; width: 70px; height: 100%;
+            border: 4px solid var(--accent); border-radius: 8px; 
+            background: linear-gradient(90deg, rgba(255,202,40,0) 0%, rgba(255,202,40,0.25) 50%, rgba(255,202,40,0) 100%);
+            z-index: 2; box-shadow: 0 0 20px rgba(255,202,40,0.4);
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s;
+        }
+        .target-zone.pulse { transform: scale(1.15); box-shadow: 0 0 40px #FF5252; background: rgba(229,57,83,0.4); border-color: #FF5252; }
+
+        .rhythm-note {
+            position: absolute; right: -60px; top: 11px; width: 60px; height: 60px;
+            background: radial-gradient(circle at 30% 30%, #FF8A65, #C62828);
+            border-radius: 50%; color: white; line-height: 60px; font-size: 26px;
+            font-weight: 900; text-align: center; z-index: 3; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.9), inset 0 -4px 10px rgba(0,0,0,0.5);
+            border: 2px solid #FFAB91; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .explosion {
+            position: absolute; left: 15%; top: -15px; font-size: 70px; z-index: 10;
+            pointer-events: none; opacity: 0;
+            animation: explodeAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 10px #FF5252);
+        }
+        @keyframes explodeAnim {
+            0% { transform: scale(0.3) rotate(-20deg); opacity: 1; }
+            50% { transform: scale(1.5) rotate(10deg); opacity: 1; }
+            100% { transform: scale(2) rotate(20deg); opacity: 0; }
+        }
+
+        .hit-feedback { position: absolute; top: 10%; left: 12%; font-size: 36px; font-weight: 900; font-style: italic; z-index: 11; opacity: 0; pointer-events: none; text-shadow: 0 4px 10px #000; letter-spacing: 2px; }
+        .combo-counter { position: absolute; top: 12px; right: 20px; font-size: 26px; color: var(--accent); font-weight: 900; text-shadow: 0 4px 8px #000; opacity: 0; transition: 0.1s; }
+        .combo-active { opacity: 1; transform: scale(1.15); color: #FFF59D; }
+
+        /* --- 調味撒鹽動畫 --- */
+        .seasoning-drop {
+            position: absolute; font-size: 45px; top: -60px; left: 50%;
+            transform: translateX(-50%); z-index: 10; pointer-events: none;
+            animation: dropSeasoning 1.5s ease-in forwards; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.6));
+        }
+        @keyframes dropSeasoning {
+            0% { top: -60px; opacity: 1; transform: translateX(-50%) rotate(-20deg); }
+            30% { top: 25%; transform: translateX(-50%) rotate(25deg); }
+            80% { top: 25%; transform: translateX(-50%) rotate(25deg); opacity: 1;}
+            100% { top: 25%; transform: translateX(-50%) rotate(25deg); opacity: 0;}
+        }
+        .salt-particle {
+            position: absolute; background: #FFF; width: 5px; height: 5px; border-radius: 50%;
+            box-shadow: 0 0 5px #FFF; animation: saltFall 0.8s linear forwards;
+        }
+        @keyframes saltFall {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(80px) scale(0); opacity: 0; }
+        }
+
+        .progress-bar { height: 16px; background: #222; border-radius: 8px; margin-top: 18px; overflow: hidden; box-shadow: inset 0 3px 6px rgba(0,0,0,0.9); border: 1px solid #444; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4CAF50, #81C784); width: 0%; transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+        .tag { background: var(--primary-dark); color: var(--accent); padding: 4px 12px; border-radius: 6px; font-size: 13px; margin-right: 8px; font-weight: 900; border: 1px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+        /* ===== 台灣迷因梗樣式 ===== */
+        .meme-bubble {
+            position: fixed; font-size: 28px; font-weight: 900;
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+            color: #000; padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7), 0 0 0 4px #000;
+            animation: memeBounce 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none; z-index: 100; border: 3px solid #000;
+            transform-origin: center;
+        }
+        @keyframes memeBounce {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg) translateY(-80px); opacity: 0; }
+        }
+
+        .meme-text-pop {
+            position: absolute; font-size: 40px; font-weight: 900;
+            color: #FFE66D; text-shadow: 3px 3px 0 #000, -3px -3px 0 #000;
+            animation: textPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none; z-index: 100;
+        }
+        @keyframes textPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            60% { transform: scale(1.4) rotate(5deg); opacity: 1; }
+            100% { transform: scale(0.5) rotate(0deg) translateY(-100px); opacity: 0; }
+        }
+
+        .meme-voice {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 107, 107, 0.95); color: #FFF;
+            padding: 20px 30px; border-radius: 15px; font-size: 22px; font-weight: 900;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 101;
+            border: 3px solid #FFE66D;
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* 最終印章 */
+        .stamp {
+            display: inline-block; animation: stampDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-size: 90px; margin: 0; color: var(--accent); font-family: 'Noto Serif TC', serif; 
+            text-shadow: 0 0 30px rgba(255,202,40,0.6), 0 5px 10px rgba(0,0,0,0.8);
+        }
+        @keyframes stampDown {
+            0% { transform: scale(3.5) rotate(-20deg); opacity: 0; filter: blur(5px); }
+            50% { transform: scale(0.85) rotate(8deg); opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* ===== 手機響應式設計 ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 25px;
+                max-width: 95%;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 28px;
+                letter-spacing: 2px;
+            }
+
+            h2 {
+                font-size: 18px;
+                padding-bottom: 8px;
+                margin-bottom: 18px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            .chef-mascot {
+                font-size: 50px;
+            }
+
+            .btn {
+                padding: 12px 18px;
+                font-size: 16px;
+                margin: 6px;
+                border-radius: 10px;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px) scale(1.01);
+            }
+
+            .game-area {
+                height: 200px;
+                margin-top: 15px;
+                border-radius: 12px;
+            }
+
+            .wash-item {
+                font-size: 80px;
+                line-height: 200px;
+            }
+
+            .flying-veg {
+                font-size: 40px;
+            }
+
+            #pick-grid, #season-grid {
+                grid-template-columns: 1fr;
+                gap: 10px !important;
+                margin-top: 15px;
+            }
+
+            .rhythm-note {
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 22px;
+                right: -50px;
+                top: 15px;
+            }
+
+            .target-zone {
+                width: 60px;
+            }
+
+            #btn-stir {
+                height: 60px;
+                font-size: 20px;
+                margin-top: 15px;
+            }
+
+            .lore-overlay {
+                padding: 20px;
+            }
+
+            .lore-title {
+                font-size: 18px;
+            }
+
+            .lore-text {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .context-bar {
+                font-size: 13px;
+                padding: 10px;
+                margin-top: 12px;
+            }
+
+            .meme-bubble {
+                font-size: 20px;
+                padding: 8px 16px;
+                border-radius: 40px;
+            }
+
+            .meme-voice {
+                font-size: 16px;
+                padding: 15px 20px;
+                border-radius: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                overflow-y: auto;
+            }
+
+            .container {
+                padding: 18px;
+                max-width: 98%;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+                letter-spacing: 1px;
+                margin-top: 5px;
+            }
+
+            h2 {
+                font-size: 16px;
+                padding-bottom: 6px;
+                margin-bottom: 14px;
+            }
+
+            p {
+                font-size: 12px;
+                margin: 10px 0;
+            }
+
+            .chef-mascot {
+                font-size: 40px;
+                margin-bottom: -10px;
+            }
+
+            .btn {
+                padding: 10px 14px;
+                font-size: 14px;
+                margin: 4px;
+                width: calc(50% - 12px);
+            }
+
+            .btn.primary {
+                width: 100%;
+            }
+
+            .game-area {
+                height: 150px;
+                margin-top: 12px;
+                border-radius: 10px;
+            }
+
+            .wash-item {
+                font-size: 60px;
+                line-height: 150px;
+            }
+
+            .flying-veg {
+                font-size: 30px;
+                bottom: -60px;
+            }
+
+            #pick-grid, #season-grid {
+                grid-template-columns: 1fr;
+                gap: 8px !important;
+                margin-top: 12px;
+            }
+
+            .rhythm-track {
+                height: 70px;
+            }
+
+            .rhythm-note {
+                width: 45px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 18px;
+                right: -45px;
+                top: 12px;
+            }
+
+            .target-zone {
+                width: 50px;
+                height: 70px;
+            }
+
+            .combo-counter {
+                font-size: 18px;
+                top: 8px;
+                right: 10px;
+            }
+
+            .hit-feedback {
+                font-size: 24px;
+                top: 15%;
+                left: 15%;
+            }
+
+            #btn-stir {
+                height: 50px;
+                font-size: 16px;
+                margin-top: 12px;
+                padding: 12px;
+            }
+
+            .lore-overlay {
+                padding: 16px;
+            }
+
+            .lore-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .lore-text {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .context-bar {
+                font-size: 12px;
+                padding: 8px;
+                margin-top: 10px;
+            }
+
+            .progress-bar {
+                height: 12px;
+                margin-top: 12px;
+            }
+
+            .tag {
+                font-size: 11px;
+                padding: 3px 8px;
+                margin-right: 4px;
+            }
+
+            .meme-bubble {
+                font-size: 16px;
+                padding: 6px 12px;
+                border-radius: 30px;
+                border: 2px solid #000;
+            }
+
+            .meme-text-pop {
+                font-size: 28px;
+            }
+
+            .meme-voice {
+                font-size: 14px;
+                padding: 12px 15px;
+                border-radius: 10px;
+                bottom: 10px;
+            }
+
+            .stamp {
+                font-size: 60px;
+            }
+
+            #result-comment {
+                font-size: 13px;
+            }
+
+            .float-food {
+                font-size: 25px;
+            }
+        }
+
+        /* 橫向模式優化 */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                min-height: auto;
+                padding: 5px;
+            }
+
+            .container {
+                padding: 15px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .game-area {
+                height: 130px;
+            }
+
+            .wash-item {
+                font-size: 50px;
+                line-height: 130px;
+            }
+
+            .chef-mascot {
+                font-size: 35px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="floating-bg" id="floating-bg"></div>
+<div class="embers" id="bg-embers"></div>
+
+<div class="container" id="main-container">
+    
+    <!-- 0. 主選單 -->
+    <div id="panel-menu" class="panel active">
+        <div class="chef-mascot">👨‍🍳</div>
+        <h1 style="margin-top: 10px;">中華大廚<br><span style="font-size: 26px; color: #FFF; letter-spacing: 5px;">八大菜系挑戰</span></h1>
+        <p style="color: #9E9E9E; margin-bottom: 35px; font-size: 16px;">在實作中體會歷史，從調味裡品嚐風土</p>
+        <button class="btn primary" style="font-size: 22px; padding: 18px 50px;" onclick="startRoulette()">🎲 轉動命運羅盤</button>
+    </div>
+
+    <!-- 1. 轉盤 -->
+    <div id="panel-roulette" class="panel">
+        <h2 style="color: #FFF; border: none;">接受考驗...</h2>
+        <div id="roulette-display" style="font-family: 'Noto Serif TC', serif; font-size: 55px; color: var(--accent); text-shadow: 0 5px 15px rgba(0,0,0,0.9);">???</div>
+        <div id="cuisine-info" style="display: none; text-align: left; background: rgba(0,0,0,0.6); padding: 25px; border-radius: 16px; border: 1px solid #333;">
+            <p><span class="tag">經典名菜</span> <strong id="info-dish" style="font-size: 22px; color: #FFF;"></strong></p>
+            <p style="margin-top: 15px;"><span class="tag">風味精髓</span> <span id="info-flavor" style="color: #E0E0E0; font-size: 16px;"></span></p>
+            <button class="btn primary" style="width: 100%; margin-top: 25px;" onclick="startPhase('pick')">🔪 進入廚房</button>
+        </div>
+    </div>
+
+    <!-- 2. 挑菜 -->
+    <div id="panel-pick" class="panel">
+        <h2>第一關：嚴選食材</h2>
+        <p>為 <strong class="current-dish-name" style="color:var(--accent); font-size: 20px;"></strong> 選擇 <strong style="color:var(--primary); font-size: 20px;">2</strong> 樣核心食材：</p>
+        <div id="pick-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 25px; position: relative;">
+            <div id="pick-lore" class="lore-overlay">
+                <div class="lore-title">💡 食材考究</div>
+                <div id="pick-lore-text" class="lore-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 洗菜 -->
+    <div id="panel-wash" class="panel">
+        <h2>第二關：清洗雜質</h2>
+        <p style="color: #9E9E9E;">在食材上快速來回滑動（搓洗）去除泥土</p>
+        <div class="game-area" id="wash-area">
+            <div id="wash-item-display" class="wash-item">🥬</div>
+            <div id="dirt-overlay" onmousemove="scrubDirt(event)" ontouchmove="scrubDirt(event)" style="touch-action: none;"></div>
+        </div>
+        <div class="progress-bar"><div id="wash-progress" class="progress-fill"></div></div>
+        <div class="context-bar" id="wash-geo-hint">🌍 地理背景：讀取中...</div>
+    </div>
+
+    <!-- 4. 切菜 -->
+    <div id="panel-chop" class="panel">
+        <h2>第三關：刀工處理</h2>
+        <p style="color: #9E9E9E;">滑鼠劃過 <strong style="color:var(--success)">食材</strong>！切到 <strong style="color:var(--primary)">炸彈/毒物</strong> 會重傷！</p>
+        <div class="game-area" id="chop-area">
+            <canvas id="trail-canvas"></canvas>
+        </div>
+        <div style="margin-top: 18px; font-weight: 900; font-size: 22px;">得分：<span id="chop-score-display" style="color:var(--accent)">0</span> / 12</div>
+    </div>
+
+    <!-- 5. 炒菜 -->
+    <div id="panel-cook" class="panel">
+        <h2>第四關：精準火候 <span style="font-size:14px;color:#888;">(確保開啟聲音🔊)</span></h2>
+        <div class="game-area" style="height: 160px;">
+            <div class="rhythm-track" id="rhythm-track">
+                <div class="target-zone" id="target-zone"></div>
+                <div id="explosion-effect" class="explosion">🔥</div>
+            </div>
+            <div id="hit-msg" class="hit-feedback">完美!</div>
+            <div id="combo-display" class="combo-counter">0 Combo</div>
+        </div>
+        <button id="btn-stir" class="btn primary" style="width: 100%; height: 75px; font-size: 28px; margin-top: 20px; letter-spacing: 2px;" onmousedown="hitNote()">🔥 翻 炒 ! (空白鍵)</button>
+        <div class="progress-bar"><div id="cook-progress" class="progress-fill"></div></div>
+        <div class="context-bar" id="cook-style-hint" style="background:linear-gradient(90deg, rgba(230, 81, 0, 0.15), rgba(230, 81, 0, 0.05)); color:#FFB74D; border-color:#FF9800;">🔥 火候特色：讀取中...</div>
+    </div>
+
+    <!-- 6. 調味 -->
+    <div id="panel-season" class="panel">
+        <h2>最後一關：靈魂調味</h2>
+        <p>起鍋前，選擇 <strong style="color:var(--primary); font-size: 20px;">2</strong> 種代表此菜系精髓的調料：</p>
+        <div id="season-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 25px; position: relative;">
+            <div id="season-lore" class="lore-overlay">
+                <div class="lore-title">💡 調味美學</div>
+                <div id="season-lore-text" class="lore-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 結果面板 -->
+    <div id="panel-result" class="panel">
+        <h1 id="result-rank" class="stamp">S</h1>
+        <h2 id="result-title" style="color: #FFF; border: none; margin-top: -15px; font-size: 28px; letter-spacing: 2px;"></h2>
+        <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 25px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #333;">
+            <p style="margin: 8px 0; font-size: 18px;">🛒 食材：<span id="res-pick"></span></p>
+            <p style="margin: 8px 0; font-size: 18px;">🔪 刀工：<span id="res-chop" style="color:var(--accent);font-weight:900;"></span> 分</p>
+            <p style="margin: 8px 0; font-size: 18px;">🔥 火候：<span id="res-cook"></span></p>
+            <p style="margin: 8px 0; font-size: 18px;">🧂 調味：<span id="res-season"></span></p>
+        </div>
+        <div id="result-comment" style="font-size: 16px; background: linear-gradient(90deg, rgba(255,202,40,0.1), transparent); padding: 18px; border-radius: 10px; border-left: 5px solid var(--accent); text-align: left; color: #E0E0E0; line-height: 1.6;"></div>
+        <button class="btn primary" style="width: 100%; margin-top: 25px; height: 60px; font-size: 22px;" onclick="location.reload()">再來一局</button>
+    </div>
+</div>
+
+<script>
+    /* ===== 台灣經典迷因梗庫 ===== */
+    const taiwanMemes = [
+        { text: "你在大聲什麼啦", emoji: "🗣️", color: "#FF6B6B" },
+        { text: "颱風天就是要汎舟啊", emoji: "🚣", color: "#FFE66D" },
+        { text: "有一種哈味", emoji: "👃", color: "#FF6B6B" },
+        { text: "阿嬤妳怎麼沒感覺", emoji: "👵", color: "#FFE66D" },
+        { text: "咻蹦阿嬤", emoji: "💥", color: "#FF6B6B" },
+        { text: "卑鄙源之助", emoji: "😈", color: "#FFE66D" },
+        { text: "800英呎、500英呎，降落！", emoji: "✈️", color: "#FF6B6B" },
+        { text: "67", emoji: "🔞", color: "#FF6B6B" },
+        { text: "你要不要吃哈密哈", emoji: "😋", color: "#FF6B6B" },
+        { text: "勾北勾北", emoji: "🚗", color: "#FFE66D" },
+        { text: "阿偉阿偉", emoji: "👨", color: "#FF6B6B" },
+        { text: "我有個朋友", emoji: "🤐", color: "#FFE66D" },
+        { text: "欸你知道嗎", emoji: "🗣️", color: "#FF6B6B" },
+        { text: "真的假的", emoji: "🤨", color: "#FFE66D" },
+        { text: "不行啦", emoji: "✋", color: "#FF6B6B" },
+        { text: "怎樣", emoji: "😏", color: "#FFE66D" }
+    ];
+
+    function popTaiwanMeme(x, y, meme = null) {
+        if (!meme) meme = taiwanMemes[Math.floor(Math.random() * taiwanMemes.length)];
+        let bubble = document.createElement('div');
+        bubble.className = 'meme-bubble';
+        bubble.innerText = meme.text;
+        bubble.style.left = x + 'px';
+        bubble.style.top = y + 'px';
+        bubble.style.background = `linear-gradient(135deg, ${meme.color}, #FFE66D)`;
+        document.body.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 1200);
+    }
+
+    function popMemeEmoji(x, y, emoji) {
+        let pop = document.createElement('div');
+        pop.className = 'meme-text-pop';
+        pop.innerText = emoji;
+        pop.style.left = x + 'px';
+        pop.style.top = y + 'px';
+        document.body.appendChild(pop);
+        setTimeout(() => pop.remove(), 1200);
+    }
+
+    function showMemeVoice(text) {
+        let existing = document.querySelector('.meme-voice');
+        if (existing) existing.remove();
+        
+        let voice = document.createElement('div');
+        voice.className = 'meme-voice';
+        voice.innerText = text;
+        document.body.appendChild(voice);
+        setTimeout(() => voice.remove(), 2500);
+    }
+
+    function initFloatingBackground() {
+        const bg = document.getElementById('floating-bg');
+        const foods = ['🥟', '🍜', '🍤', '🌶️', '🥢', '🐟', '🥩', '🥬'];
+        for(let i=0; i<15; i++) {
+            let el = document.createElement('div');
+            el.className = 'float-food';
+            el.innerText = foods[Math.floor(Math.random() * foods.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDelay = (Math.random() * 15) + 's';
+            el.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            bg.appendChild(el);
+        }
+    }
+    initFloatingBackground();
+
+    const iconDict = {
+        "海參": "🥒", "大蔥": "🧅", "豆腐": "🧊", "豬絞肉": "🥩", "石斑魚": "🐟", "蔥薑": "🧄", 
+        "豬肉": "🥩", "蟹粉": "🦀", "鮑魚": "🦪", "乾貝": "🍘", "草魚": "🐟", "薑末": "🧄", 
+        "大魚頭": "🐡", "剁椒": "🌶️", "鱖魚": "🐠", "豬五花": "🥓"
+    };
+    const badIcons = ["💣", "🍄", "☠️", "🕷️"]; 
+
+    const bgmTracks = {
+        fast: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", 
+        med:  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", 
+        slow: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"  
+    };
+
+    const beatmaps = {
+        fast: [500, 1000, 1500, 1800, 2100, 2800, 3100, 3400, 4000, 4500, 5000, 5200], 
+        med:  [800, 1600, 2400, 3200, 3600, 4400, 5200, 6000, 6400, 7200],             
+        slow: [1200, 2600, 4000, 5400, 6800, 7500, 8900, 10300]                        
+    };
+
+    const cuisines = {
+        lu: { 
+            name: "魯菜 (山東)", dish: "蔥燒海參", flavor: "極重蔥香，猛火爆炒與高湯提鮮。", 
+            ingredients: ["海參", "大蔥"], seasonings: ["醬油", "糖"], 
+            style: "med", bgColor: "radial-gradient(circle at center, #2C1A1A 0%, #050505 100%)",
+            loreGeo: "山東地處北方，冬季嚴寒，需要蔥蒜等辛香料禦寒，且靠海盛產海鮮。",
+            loreIng: "海參本身無味，極度依賴『大蔥爆香』與『高湯』來賦予靈魂。",
+            loreCook: "魯菜講究『猛火快攻』，節奏穩健緊湊，在極短時間內逼出蔥香！(BPM: 中)",
+            loreSeason: "北方口味偏鹹，善用醬油提色增香，少許糖用來吊鮮而非甜味。"
+        },
+        chuan: { 
+            name: "川菜 (四川)", dish: "麻婆豆腐", flavor: "麻、辣、燙、鮮、香，百菜百味。", 
+            ingredients: ["豆腐", "豬絞肉"], seasonings: ["花椒粉", "豆瓣醬"], 
+            style: "fast", bgColor: "radial-gradient(circle at center, #3A0A0A 0%, #050505 100%)",
+            loreGeo: "四川盆地潮濕多霧，古人為驅除體內濕氣，習慣大量食用辛香料發汗。",
+            loreIng: "豆腐易吸味，豬絞肉提供油脂。兩者結合能完美承載複雜的香氣。",
+            loreCook: "川菜『急火短炒』！節奏極快且密集，高溫瞬間激發花椒的嗆辣！(BPM: 快)",
+            loreSeason: "『郫縣豆瓣』加上花椒的『麻』，造就了舉世聞名的麻辣風味。"
+        },
+        yue: { 
+            name: "粵菜 (廣東)", dish: "清蒸石斑魚", flavor: "原汁原味，極度講究「鑊氣」。", 
+            ingredients: ["石斑魚", "蔥薑"], seasonings: ["蒸魚醬油", "沙拉油"], 
+            style: "slow", bgColor: "radial-gradient(circle at center, #0A2A1A 0%, #050505 100%)",
+            loreGeo: "嶺南物產豐饒，氣候濕熱不宜重油重辣，追求極致鮮度的飲食文化。",
+            loreIng: "頂級海鮮不需過多調味，僅用蔥薑鋪底去腥，是對食材最大的尊重。",
+            loreCook: "蒸魚火候極嚴格！『多一分則老，少一分則生』，需耐心等待。(BPM: 慢)",
+            loreSeason: "淋上熱『沙拉油』與『蒸魚醬油』，瞬間激發魚肉鮮甜。"
+        },
+        su: { 
+            name: "蘇菜 (江蘇)", dish: "蟹粉獅子頭", flavor: "濃而不膩，擅長慢火燉煨。", 
+            ingredients: ["豬肉", "蟹粉"], seasonings: ["鹽", "高湯"], 
+            style: "slow", bgColor: "radial-gradient(circle at center, #1A1A2A 0%, #050505 100%)",
+            loreGeo: "江南水鄉自古富庶，飲食追求極致的精細、美感與清雅。",
+            loreIng: "講究『細切粗斬』的豬肉，拌入江南特產的鮮美蟹粉，口感層次極高。",
+            loreCook: "蘇菜擅長『文火慢燉』。節奏緩慢平穩，讓肉丸慢慢煨至入口即化。(BPM: 慢)",
+            loreSeason: "調味清淡，僅用鹽與純粹的『高湯』，凸顯食材本身的鮮美。"
+        },
+        min: { 
+            name: "閩菜 (福建)", dish: "佛跳牆", flavor: "鮮香清爽，擅長烹調海鮮與調湯。", 
+            ingredients: ["鮑魚", "乾貝"], seasonings: ["紹興酒", "高湯"], 
+            style: "slow", bgColor: "radial-gradient(circle at center, #1A1A3A 0%, #050505 100%)",
+            loreGeo: "依山傍海，山珍海味豐富。多雨氣候讓當地人養成愛喝熱湯的習慣。",
+            loreIng: "集結鮑魚、乾貝等頂級海味，是閩菜海鮮運用的巔峰之作。",
+            loreCook: "閩菜精髓在於『湯』，文火慢煨，讓多種食材風味完美融合。(BPM: 慢)",
+            loreSeason: "紹興酒去腥增香，搭配高湯熬煮，香氣能『罈啟葷香飄四鄰』。"
+        },
+        zhe: { 
+            name: "浙菜 (浙江)", dish: "西湖醋魚", flavor: "清鮮爽脆，酸甜適中。", 
+            ingredients: ["草魚", "薑末"], seasonings: ["香醋", "糖"], 
+            style: "med", bgColor: "radial-gradient(circle at center, #1A2A1A 0%, #050505 100%)",
+            loreGeo: "環繞西湖，受江南文人影響，菜餚常與風景、歷史典故相結合。",
+            loreIng: "選用西湖草魚，餓養幾天吐盡泥沙，搭配薑末去腥提鮮。",
+            loreCook: "火候要求極高，汆水即撈，保持魚肉極致鮮嫩爽滑。(BPM: 中)",
+            loreSeason: "不加一滴油！全靠『香醋』與『糖』調製的芡汁提鮮，酸甜開胃。"
+        },
+        xiang: { 
+            name: "湘菜 (湖南)", dish: "剁椒魚頭", flavor: "口味重鮮辣、香辣、酸辣。", 
+            ingredients: ["大魚頭", "剁椒"], seasonings: ["醬油", "米酒"], 
+            style: "fast", bgColor: "radial-gradient(circle at center, #3A1A0A 0%, #050505 100%)",
+            loreGeo: "丘陵地帶潮濕但不產花椒，為驅寒發展出純粹的『酸辣』發酵文化。",
+            loreIng: "胖頭魚魚頭富含膠質，搭配湖南特製的發酵剁椒是絕配。",
+            loreCook: "猛火蒸透！節奏強烈，高溫讓剁椒的酸辣完全滲透進魚肉。(BPM: 快)",
+            loreSeason: "米酒去腥，但整道菜的味覺主軸全靠那口熱情的發酵剁椒汁！"
+        },
+        hui: { 
+            name: "徽菜 (安徽)", dish: "臭鱖魚", flavor: "重油、重色，獨特醃鮮發酵技術。", 
+            ingredients: ["鱖魚", "豬五花"], seasonings: ["醬油", "豬油"], 
+            style: "med", bgColor: "radial-gradient(circle at center, #2A1A0A 0%, #050505 100%)",
+            loreGeo: "徽州多高山，徽商行商需跋山涉水。為保存食材發展出『醃鮮』發酵技術。",
+            loreIng: "發酵過的鱖魚聞著臭吃著香，搭配豬五花增加動物油脂香氣。",
+            loreCook: "徽菜講究『重火功』，中火慢燒收汁，讓發酵的鮮味徹底釋放。(BPM: 中)",
+            loreSeason: "『重油重色』，使用豬油與醬油，是山區勞動者補充體力的最愛。"
+        }
+    };
+    
+    const allSeasonings = ["醬油", "糖", "花椒粉", "豆瓣醬", "蒸魚醬油", "沙拉油", "鹽", "高湯", "紹興酒", "香醋", "米酒", "豬油"];
+    
+    let currentKey = ""; let cData = null;
+    let scores = { pick: 0, chop: 0, cook: 0, season: 0 };
+    let tempSelections = [];
+    
+    let audioPlayer = new Audio(); audioPlayer.loop = true;
+    let audioUnlocked = false;
+
+    document.body.addEventListener('click', () => {
+        if (!audioUnlocked) {
+            audioPlayer.src = bgmTracks.med; 
+            audioPlayer.play().then(() => {
+                audioPlayer.pause();
+                audioUnlocked = true;
+            }).catch(e => console.log("等待解鎖音效..."));
+        }
+    }, { once: true });
+
+    function showPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + id).classList.add('active');
+    }
+
+    function startRoulette() {
+        showPanel('roulette');
+        const display = document.getElementById('roulette-display');
+        const keys = Object.keys(cuisines);
+        const targetIndex = Math.floor(Math.random() * keys.length);
+        const totalTicks = (keys.length * 3) + targetIndex;
+        let currentTick = 0; let speed = 40;
+        
+        function tick() {
+            display.innerText = cuisines[keys[currentTick % keys.length]].name;
+            if (currentTick < totalTicks) {
+                currentTick++; speed += 8; 
+                // 轉盤時隨機觸發台灣迷因
+                if (Math.random() > 0.75) {
+                    popTaiwanMeme(Math.random() * window.innerWidth, 100 + Math.random() * 200);
+                }
+                setTimeout(tick, speed);
+            } else {
+                currentKey = keys[targetIndex]; cData = cuisines[currentKey];
+                display.innerText = cData.name; 
+                document.getElementById('bg-embers').style.background = cData.bgColor; 
+                document.getElementById('info-dish').innerText = cData.dish;
+                document.getElementById('info-flavor').innerText = cData.flavor;
+                document.querySelectorAll('.current-dish-name').forEach(el => el.innerText = cData.dish);
+                
+                // 轉盤結束彩蛋
+                showMemeVoice("你要不要吃哈密哈～");
+                
+                setTimeout(() => {
+                    document.getElementById('cuisine-info').style.display = 'block';
+                    document.getElementById('cuisine-info').style.animation = 'fadeIn 0.5s forwards';
+                }, 400);
+            }
+        }
+        tick();
+    }
+
+    function startPhase(phase) {
+        tempSelections = []; showPanel(phase);
+        if (phase === 'pick') setupPick();
+        if (phase === 'wash') setupWash();
+        if (phase === 'chop') setupChop();
+        if (phase === 'cook') setupCook();
+        if (phase === 'season') setupSeason();
+    }
+
+    function setupPick() {
+        const grid = document.getElementById('pick-grid');
+        Array.from(grid.children).forEach(child => { if(child.id !== 'pick-lore') child.remove(); });
+        document.getElementById('pick-lore').classList.remove('active');
+
+        let distractorKeys = Object.keys(iconDict).filter(k => !cData.ingredients.includes(k)).sort(() => 0.5 - Math.random()).slice(0, 4);
+        const pool = [...cData.ingredients, ...distractorKeys].sort(() => 0.5 - Math.random());
+        
+        pool.forEach(item => {
+            let btn = document.createElement('button'); btn.className = 'btn'; btn.innerText = `${iconDict[item]} ${item}`;
+            btn.onclick = () => {
+                btn.style.background = 'linear-gradient(145deg, var(--primary), var(--primary-dark))'; 
+                btn.style.color = '#FFF'; btn.style.borderColor = '#FF5252'; btn.disabled = true;
+                tempSelections.push(item);
+                if (tempSelections.length === 2) {
+                    scores.pick = (tempSelections.includes(cData.ingredients[0]) && tempSelections.includes(cData.ingredients[1])) ? 100 : 0;
+                    const loreBox = document.getElementById('pick-lore');
+                    const loreText = document.getElementById('pick-lore-text');
+                    if (scores.pick === 100) {
+                        loreText.innerHTML = `<span style="color:var(--success);font-weight:900;font-size:20px;letter-spacing:1px;">✅ 完美眼光！👨‍🍳</span><br><br>${cData.loreIng}`;
+                    } else {
+                        loreText.innerHTML = `<span style="color:var(--primary);font-weight:900;font-size:20px;letter-spacing:1px;">❌ 不太對喔...🤦‍♂️</span><br>正宗配方是【${cData.ingredients.join(' 與 ')}】。<br><br>${cData.loreIng}`;
+                    }
+                    loreBox.classList.add('active');
+                    setTimeout(() => startPhase('wash'), 4500);
+                }
+            };
+            grid.appendChild(btn);
+        });
+    }
+
+    let dirtOpacity = 100;
+    function setupWash() {
+        dirtOpacity = 100;
+        document.getElementById('wash-item-display').innerText = iconDict[cData.ingredients[0]];
+        document.getElementById('dirt-overlay').style.opacity = "1";
+        document.getElementById('wash-progress').style.width = "0%";
+        document.getElementById('wash-geo-hint').innerHTML = `🌍 <strong style="color:#FFF;">地理背景：</strong><br>${cData.loreGeo}`;
+        
+        // 為不同設備優化觸控區域
+        const washArea = document.getElementById('wash-area');
+        washArea.style.touchAction = 'none'; // 防止瀏覽器預設觸控行為
+    }
+    
+    function scrubDirt(e) {
+        if (dirtOpacity <= 0) return;
+        dirtOpacity -= 2; 
+        document.getElementById('dirt-overlay').style.opacity = dirtOpacity / 100;
+        document.getElementById('wash-progress').style.width = (100 - dirtOpacity) + "%";
+        
+        if (Math.random() > 0.6 && e) {
+            let splash = document.createElement('div'); 
+            splash.className = 'water-splash';
+            splash.innerText = Math.random() > 0.5 ? '💦' : '✨';
+            let rect = document.getElementById('wash-area').getBoundingClientRect();
+            
+            // 支持觸控和滑鼠
+            let x, y;
+            if (e.touches) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = (e.clientX || e.pageX) - rect.left;
+                y = (e.clientY || e.pageY) - rect.top;
+            }
+            
+            splash.style.left = (x + (Math.random()*40 - 20)) + 'px';
+            splash.style.top = (y + (Math.random()*40 - 20)) + 'px';
+            document.getElementById('wash-area').appendChild(splash);
+            setTimeout(() => splash.remove(), 600);
+            
+            // 洗菜迷因彩蛋
+            if (Math.random() > 0.85) {
+                popTaiwanMeme(x + rect.left, y + rect.top);
+            }
+        }
+        if (dirtOpacity <= 0) {
+            // 洗完菜的迷因
+            showMemeVoice("勾北勾北～");
+            setTimeout(() => startPhase('chop'), 1200);
+        }
+    }
+
+    let chopInterval, animFrame; let chopScore = 0; let isSlicing = false; let trailPoints = [];
+    function setupChop() {
+        chopScore = 0; document.getElementById('chop-score-display').innerText = "0";
+        const area = document.getElementById('chop-area');
+        Array.from(area.children).forEach(c => { if (c.id !== 'trail-canvas') c.remove(); });
+        setupCanvasTrail(area);
+        
+        let spawns = 0;
+        chopInterval = setInterval(() => {
+            if (chopScore >= 12 || spawns >= 25) { 
+                clearInterval(chopInterval); cancelAnimationFrame(animFrame);
+                scores.chop = Math.max(0, chopScore);
+                setTimeout(() => startPhase('cook'), 1500); return;
+            }
+            spawns++; spawnVeggieNinja(area);
+        }, 650);
+    }
+
+    function setupCanvasTrail(area) {
+        const canvas = document.getElementById('trail-canvas'); 
+        const ctx = canvas.getContext('2d');
+        
+        // 設置 canvas 解析度，在高DPI設備上保持清晰
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = area.clientWidth * dpr; 
+        canvas.height = area.clientHeight * dpr;
+        canvas.style.width = area.clientWidth + 'px';
+        canvas.style.height = area.clientHeight + 'px';
+        ctx.scale(dpr, dpr);
+
+        const startSlice = () => { isSlicing = true; trailPoints = []; };
+        const endSlice = () => { isSlicing = false; };
+        const moveSlice = (x, y) => {
+            if (!isSlicing) return;
+            const rect = canvas.getBoundingClientRect();
+            trailPoints.push({ x: (x - rect.left) / (rect.width / area.clientWidth), y: (y - rect.top) / (rect.height / area.clientHeight), age: 0 });
+            checkSliceCollision(x, y);
+        };
+        
+        area.onmousedown = startSlice; 
+        window.onmouseup = endSlice;
+        area.onmousemove = (e) => moveSlice(e.clientX, e.clientY);
+        
+        // 增強觸控支持
+        area.ontouchstart = (e) => { startSlice(); e.preventDefault(); }; 
+        window.ontouchend = endSlice;
+        area.ontouchmove = (e) => { 
+            if (e.touches.length > 0) moveSlice(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        };
+
+        function drawTrail() {
+            ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
+            if (trailPoints.length > 1) {
+                ctx.beginPath(); ctx.moveTo(trailPoints[0].x, trailPoints[0].y);
+                for (let i = 1; i < trailPoints.length; i++) {
+                    ctx.lineTo(trailPoints[i].x, trailPoints[i].y);
+                }
+                // 動態透明度衰減刀光
+                ctx.strokeStyle = `rgba(100, 255, 218, ${1 - trailPoints[0].age/5})`; 
+                ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${1 - trailPoints[0].age/5})`; 
+                ctx.lineWidth = 3; ctx.stroke();
+            }
+            trailPoints.forEach(p => p.age += 0.8); 
+            trailPoints = trailPoints.filter(p => p.age < 5); 
+            animFrame = requestAnimationFrame(drawTrail);
+        }
+        drawTrail();
+    }
+
+    function checkSliceCollision(x, y) {
+        let el = document.elementFromPoint(x, y);
+        if (el && el.classList.contains('flying-veg')) sliceVeggie(el, document.getElementById('chop-area'));
+    }
+
+    function spawnVeggieNinja(area) {
+        const veg = document.createElement('div'); veg.className = 'flying-veg';
+        let isGood = Math.random() > 0.35;
+        if (isGood) { 
+            veg.innerText = iconDict[cData.ingredients[Math.floor(Math.random() * cData.ingredients.length)]]; 
+            veg.dataset.type = "good"; 
+        } else { 
+            veg.innerText = badIcons[Math.floor(Math.random() * badIcons.length)]; 
+            veg.dataset.type = "bad"; 
+        }
+        
+        veg.style.left = Math.random() * 70 + 15 + '%';
+        const duration = Math.random() * 0.5 + 1.1;
+        veg.style.transition = `transform ${duration}s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.3s`;
+        area.appendChild(veg);
+        
+        setTimeout(() => veg.style.transform = `translateY(-280px) rotate(${Math.random() > 0.5 ? 360 : -360}deg)`, 30);
+        veg.onmouseenter = () => { if (isSlicing) sliceVeggie(veg, area); };
+        setTimeout(() => { if (area.contains(veg)) veg.remove(); }, duration * 1000);
+    }
+
+    function sliceVeggie(veg, area) {
+        if (veg.dataset.sliced === "true") return;
+        veg.dataset.sliced = "true";
+        const rect = veg.getBoundingClientRect(); const areaRect = area.getBoundingClientRect();
+        const fText = document.createElement('div'); fText.className = 'float-text';
+        fText.style.left = (rect.left - areaRect.left) + 'px'; fText.style.top = (rect.top - areaRect.top) + 'px';
+        
+        if (veg.dataset.type === "good") { 
+            chopScore += 1; veg.innerText = "✨"; fText.innerText = "+1"; fText.style.color = "var(--success)";
+            // 成功切菜的迷因
+            if (chopScore % 3 === 0) {
+                popMemeEmoji(rect.left, rect.top, "👍");
+            }
+        } else { 
+            chopScore -= 3; veg.innerText = "💥"; fText.innerText = "-3"; fText.style.color = "var(--primary)";
+            // 失敗的迷因
+            popTaiwanMeme(rect.left - 100, rect.top - 80, { text: "67", emoji: "🔞", color: "#FF6B6B" });
+            document.getElementById('main-container').classList.add('shake-screen');
+            setTimeout(() => document.getElementById('main-container').classList.remove('shake-screen'), 350);
+        }
+        
+        area.appendChild(fText); setTimeout(() => fText.remove(), 600);
+        document.getElementById('chop-score-display').innerText = chopScore;
+        veg.style.transform += ' scale(1.5)'; veg.style.opacity = '0';
+        setTimeout(() => { if(veg.parentNode) veg.remove(); }, 300);
+    }
+
+    let notes = []; let cookProgress = 0; let combo = 0; let rhythmTimeouts = [];
+    function setupCook() {
+        const track = document.getElementById('rhythm-track');
+        document.querySelectorAll('.rhythm-note').forEach(n => n.remove());
+        rhythmTimeouts.forEach(clearTimeout); rhythmTimeouts = [];
+        notes = []; cookProgress = 0; scores.cook = 0; combo = 0;
+        document.getElementById('cook-progress').style.width = "0%";
+        updateComboUI();
+        
+        document.getElementById('cook-style-hint').innerHTML = `🔥 <strong style="color:#FFF;">火候特色：</strong><br>${cData.loreCook}`;
+
+        if (audioUnlocked) {
+            audioPlayer.src = bgmTracks[cData.style];
+            audioPlayer.currentTime = 0;
+            audioPlayer.play().catch(e => console.log("音效播放失敗"));
+        }
+
+        const pattern = beatmaps[cData.style];
+        const travelTimeMs = 1500; 
+
+        pattern.forEach((delay) => {
+            let tid = setTimeout(() => {
+                let note = document.createElement('div'); note.className = 'rhythm-note'; note.innerText = "火";
+                note.style.transition = `right ${travelTimeMs/1000}s linear`;
+                track.appendChild(note); notes.push(note);
+                setTimeout(() => { if (track.contains(note)) note.style.right = '85%'; }, 30);
+                setTimeout(() => { 
+                    if (track.contains(note)) { 
+                        showHitText("Miss", "var(--primary)"); 
+                        combo = 0; updateComboUI();
+                        note.remove(); checkCookEnd(); 
+                    } 
+                }, travelTimeMs + 200);
+            }, delay);
+            rhythmTimeouts.push(tid);
+        });
+
+        let endDelay = pattern[pattern.length - 1] + travelTimeMs + 1000;
+        rhythmTimeouts.push(setTimeout(checkCookEnd, endDelay));
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && document.getElementById('panel-cook').classList.contains('active')) { e.preventDefault(); hitNote(); }
+    });
+
+    function hitNote() {
+        const target = document.getElementById('target-zone');
+        const targetRect = target.getBoundingClientRect();
+        
+        target.classList.add('pulse');
+        setTimeout(() => target.classList.remove('pulse'), 150);
+
+        let hitSomething = false;
+        let activeNotes = notes.filter(n => n.parentNode);
+        if(activeNotes.length === 0) { showHitText("空炒", "#9E9E9E"); combo = 0; updateComboUI(); return; }
+        
+        let note = activeNotes[0];
+        const nRect = note.getBoundingClientRect();
+        const centerDiff = Math.abs((nRect.left + nRect.width/2) - (targetRect.left + targetRect.width/2));
+        
+        if (nRect.left < targetRect.right + 20 && nRect.right > targetRect.left - 20) {
+            hitSomething = true; note.remove();
+            if (centerDiff < 25) { 
+                scores.cook += 10; combo++; showHitText("Perfect!", "var(--success)"); 
+                cookProgress += 10 + (combo > 3 ? 2 : 0);
+                triggerExplosion(); 
+            } else { 
+                scores.cook += 5; combo = 0; showHitText("Good", "var(--accent)"); cookProgress += 5; 
+            }
+            document.getElementById('cook-progress').style.width = Math.min(100, cookProgress) + "%";
+            updateComboUI();
+        }
+        
+        if (!hitSomething) { showHitText("空炒", "#9E9E9E"); combo = 0; updateComboUI(); }
+    }
+
+    function triggerExplosion() {
+        const explosion = document.getElementById('explosion-effect');
+        explosion.style.animation = 'none';
+        explosion.offsetHeight; 
+        explosion.style.animation = 'explodeAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+    }
+
+    function updateComboUI() {
+        const el = document.getElementById('combo-display');
+        if (combo > 1) {
+            el.innerText = combo + " Combo!"; el.classList.add('combo-active');
+            setTimeout(() => el.classList.remove('combo-active'), 100);
+        } else { el.style.opacity = 0; }
+    }
+
+    function showHitText(text, color) {
+        const msg = document.getElementById('hit-msg'); msg.innerText = text; msg.style.color = color;
+        msg.style.opacity = 1; msg.style.transform = 'scale(1.2) translateY(-10px)';
+        
+        // 不同結果的迷因反應
+        if (text === "Perfect!") {
+            popMemeEmoji(window.innerWidth / 2, 100, "🔥");
+            showMemeVoice("阿偉阿偉！");
+        } else if (text === "Miss") {
+            popTaiwanMeme(window.innerWidth / 2, 150, { text: "欸你知道嗎", emoji: "🗣️", color: "#FF6B6B" });
+        } else if (text === "Good") {
+            popMemeEmoji(window.innerWidth / 2, 100, "✌️");
+        }
+        
+        setTimeout(() => { msg.style.opacity = 0; msg.style.transform = 'scale(1) translateY(0)'; }, 300);
+    }
+
+    function checkCookEnd() {
+        if (document.querySelectorAll('.rhythm-note').length === 0) {
+            audioPlayer.pause(); setTimeout(() => startPhase('season'), 800);
+        }
+    }
+
+    function setupSeason() {
+        const grid = document.getElementById('season-grid');
+        Array.from(grid.children).forEach(child => { if(child.id !== 'season-lore') child.remove(); });
+        document.getElementById('season-lore').classList.remove('active');
+
+        const correct = cData.seasonings;
+        const distractorKeys = allSeasonings.filter(i => !correct.includes(i)).sort(() => 0.5 - Math.random()).slice(0, 4);
+        const pool = [...correct, ...distractorKeys].sort(() => 0.5 - Math.random());
+        
+        pool.forEach(item => {
+            let btn = document.createElement('button'); btn.className = 'btn'; btn.innerText = item;
+            btn.onclick = () => {
+                btn.style.background = 'linear-gradient(145deg, var(--accent), var(--accent-dark))'; 
+                btn.style.color = '#111'; btn.style.borderColor = '#FFF'; btn.disabled = true;
+                tempSelections.push(item);
+                
+                playSeasoningAnimation();
+
+                if (tempSelections.length === 2) {
+                    scores.season = (tempSelections.includes(correct[0]) && tempSelections.includes(correct[1])) ? 100 : 0;
+                    const loreBox = document.getElementById('season-lore');
+                    const loreText = document.getElementById('season-lore-text');
+                    
+                    setTimeout(() => { 
+                        if (scores.season === 100) {
+                            loreText.innerHTML = `<span style="color:var(--success);font-weight:900;font-size:20px;letter-spacing:1px;">✅ 抓對味道了！👨‍🍳</span><br><br>${cData.loreSeason}`;
+                        } else {
+                            loreText.innerHTML = `<span style="color:var(--primary);font-weight:900;font-size:20px;letter-spacing:1px;">❌ 這味道...不太正宗喔！</span><br>靈魂調味應是【${cData.seasonings.join(' 與 ')}】。<br><br>${cData.loreSeason}`;
+                        }
+                        loreBox.classList.add('active');
+                        setTimeout(showResult, 4500);
+                    }, 1200);
+                }
+            };
+            grid.appendChild(btn);
+        });
+    }
+
+    function playSeasoningAnimation() {
+        const panel = document.getElementById('panel-season');
+        const shaker = document.createElement('div');
+        shaker.className = 'seasoning-drop'; shaker.innerText = '🧂';
+        panel.appendChild(shaker);
+        
+        setTimeout(() => {
+            for(let i=0; i<8; i++) {
+                let salt = document.createElement('div'); salt.className = 'salt-particle';
+                salt.style.left = (50 + Math.random()*10 - 5) + '%';
+                salt.style.top = '40%';
+                salt.style.animationDelay = (Math.random() * 0.2) + 's';
+                panel.appendChild(salt);
+                setTimeout(() => salt.remove(), 1000);
+            }
+        }, 500);
+        setTimeout(() => shaker.remove(), 1500);
+    }
+
+    function showResult() {
+        showPanel('result');
+        let pickScore = scores.pick; let chopScore = Math.max(0, Math.min(100, (scores.chop / 12) * 100));
+        let cookScore = Math.min(100, scores.cook); 
+        let seasonScore = scores.season;
+        let avg = (pickScore + chopScore + cookScore + seasonScore) / 4;
+        
+        let rank = "C"; let title = "廚房災難"; let memeMsg = "67";
+        if (avg >= 90 && pickScore === 100 && seasonScore === 100) { 
+            rank = "S"; title = "特級大廚"; memeMsg = "你在大聲什麼啦～";
+        } else if (avg >= 70) { 
+            rank = "A"; title = "掌勺師傅"; memeMsg = "有一種哈味欸"; 
+        } else if (avg >= 50) { 
+            rank = "B"; title = "廚房學徒"; memeMsg = "阿嬤妳怎麼沒感覺"; 
+        } else {
+            memeMsg = "咻蹦阿嬤，降落！";
+        }
+        
+        document.getElementById('result-rank').innerText = rank;
+        document.getElementById('result-rank').style.animation = 'none';
+        document.getElementById('result-rank').offsetHeight; 
+        document.getElementById('result-rank').style.animation = 'stampDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+
+        document.getElementById('result-rank').style.color = rank === 'S' ? 'var(--accent)' : 'var(--primary)';
+        document.getElementById('result-title').innerText = title;
+        document.getElementById('res-pick').innerHTML = scores.pick === 100 ? `<span style="color:var(--success)">✅ 正確掌握</span>` : `<span style="color:var(--primary)">❌ 眼光偏差</span>`;
+        document.getElementById('res-chop').innerText = scores.chop;
+        document.getElementById('res-cook').innerHTML = scores.cook >= 80 ? `<span style="color:var(--success)">🔥 完美入魂</span>` : `<span style="color:var(--primary)">😐 火候欠佳</span>`;
+        document.getElementById('res-season').innerHTML = scores.season === 100 ? `<span style="color:var(--success)">✅ 正宗精髓</span>` : `<span style="color:var(--primary)">❌ 嚴重走味</span>`;
+        
+        // 加入迷因評論
+        document.getElementById('result-comment').innerHTML = `<span style="color:#FFE66D;font-size:18px;font-weight:900;">→ ${memeMsg}</span><br><br>👨‍🍳 <strong style="color:var(--accent);font-size:18px;">總結複習：</strong><br><br>這道【${cData.name}】的《${cData.dish}》，精髓在於：<br><br>1. ${cData.loreIng}<br>2. ${cData.loreCook}<br>3. ${cData.loreSeason}`;
+        
+        // 觸發結果迷因彩蛋
+        showMemeVoice(memeMsg);
+        setTimeout(() => {
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    popTaiwanMeme(Math.random() * window.innerWidth, 150 + Math.random() * 200, 
+                                 taiwanMemes[Math.floor(Math.random() * taiwanMemes.length)]);
+                }, i * 200);
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>
