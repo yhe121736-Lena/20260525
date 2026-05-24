@@ -1022,8 +1022,8 @@
         // 依裝置類型調整生成頻率與上限（觸控裝置放慢）
         const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
         // 手機上降低生成頻率並減少同時生成上限，讓玩家有更充裕的反應時間
-        const spawnInterval = isTouch ? 1200 : 650; // 手機從 900 -> 1200 ms
-        const spawnLimit = isTouch ? 14 : 25; // 手機同時上限降低
+        const spawnInterval = isTouch ? 1400 : 650; // 觸控改為 1400 ms
+        const spawnLimit = isTouch ? 12 : 25; // 手機同時上限降到 12
         chopInterval = setInterval(() => {
             if (chopScore >= 12 || spawns >= spawnLimit) {
                 clearInterval(chopInterval); cancelAnimationFrame(animFrame);
@@ -1107,8 +1107,8 @@
         const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
         veg.style.left = Math.random() * 70 + 15 + '%';
-        // 手機上增加時長讓玩家有時間切到（進一步放慢）
-        const duration = Math.random() * 1.0 + (isTouch ? 2.2 : 1.1);
+        // 手機上增加時長讓玩家有時間切到（再放慢）
+        const duration = Math.random() * 1.0 + (isTouch ? 2.6 : 1.1);
         veg.style.transition = `transform ${duration}s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.3s`;
         // 初始放在容器下方
         veg.style.bottom = '-40px';
