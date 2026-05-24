@@ -1019,14 +1019,18 @@
         setupCanvasTrail(area);
         
         let spawns = 0;
+        // 依裝置類型調整生成頻率與上限（觸控裝置放慢）
+        const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+        const spawnInterval = isTouch ? 900 : 650;
+        const spawnLimit = isTouch ? 18 : 25;
         chopInterval = setInterval(() => {
-            if (chopScore >= 12 || spawns >= 25) { 
+            if (chopScore >= 12 || spawns >= spawnLimit) {
                 clearInterval(chopInterval); cancelAnimationFrame(animFrame);
                 scores.chop = Math.max(0, chopScore);
                 setTimeout(() => startPhase('cook'), 1500); return;
             }
             spawns++; spawnVeggieNinja(area);
-        }, 650);
+        }, spawnInterval);
     }
 
     function setupCanvasTrail(area) {
@@ -1090,22 +1094,33 @@
     function spawnVeggieNinja(area) {
         const veg = document.createElement('div'); veg.className = 'flying-veg';
         let isGood = Math.random() > 0.35;
-        if (isGood) { 
-            veg.innerText = iconDict[cData.ingredients[Math.floor(Math.random() * cData.ingredients.length)]]; 
-            veg.dataset.type = "good"; 
-        } else { 
-            veg.innerText = badIcons[Math.floor(Math.random() * badIcons.length)]; 
-            veg.dataset.type = "bad"; 
+        if (isGood) {
+            veg.innerText = iconDict[cData.ingredients[Math.floor(Math.random() * cData.ingredients.length)]];
+            veg.dataset.type = "good";
+        } else {
+            veg.innerText = badIcons[Math.floor(Math.random() * badIcons.length)];
+            veg.dataset.type = "bad";
         }
-        
+
+        // 檢測是否為觸控裝置，若是則放慢速度與降低生成頻率
+        const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
         veg.style.left = Math.random() * 70 + 15 + '%';
-        const duration = Math.random() * 0.5 + 1.1;
+        // 手機上增加時長讓玩家有時間切到
+        const duration = Math.random() * 0.8 + (isTouch ? 1.6 : 1.1);
         veg.style.transition = `transform ${duration}s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.3s`;
+        // 初始放在容器下方
+        veg.style.bottom = '-40px';
         area.appendChild(veg);
-        
-        setTimeout(() => veg.style.transform = `translateY(-280px) rotate(${Math.random() > 0.5 ? 360 : -360}deg)`, 30);
+
+        // 根據遊戲區高度計算移動距離，避免在小螢幕上過早飛出
+        const travel = Math.max(area.clientHeight + 60, 220);
+        setTimeout(() => veg.style.transform = `translateY(-${travel}px) rotate(${Math.random() > 0.5 ? 360 : -360}deg)`, 30);
+
+        // 鼠標懸停切菜仍保留（桌面），但主要以滑動檢測為主
         veg.onmouseenter = () => { if (isSlicing) sliceVeggie(veg, area); };
-        setTimeout(() => { if (area.contains(veg)) veg.remove(); }, duration * 1000);
+        // 確保在動畫完成後清除元素（給點 margin 時間）
+        setTimeout(() => { if (area.contains(veg)) veg.remove(); }, duration * 1000 + 600);
     }
 
     function sliceVeggie(veg, area) {
